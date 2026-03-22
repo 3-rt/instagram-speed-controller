@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Instagram Speed Controller — Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Instagram Speed Controller</h1>
+    <p class="subtitle">Customize your playback speed controls</p>
+
+    <section>
+      <h2>Speed Settings</h2>
+      <div class="setting-row">
+        <label for="defaultSpeed">Default Speed</label>
+        <input type="number" id="defaultSpeed" step="0.1" min="0.1" max="16">
+      </div>
+      <div class="setting-row">
+        <label for="speedIncrement">Speed Increment (S/D and -/+)</label>
+        <input type="number" id="speedIncrement" step="0.05" min="0.05" max="2">
+      </div>
+      <div class="setting-row">
+        <label for="largeSpeedIncrement">Large Increment (&laquo;/&raquo;)</label>
+        <input type="number" id="largeSpeedIncrement" step="0.1" min="0.1" max="5">
+      </div>
+      <div class="setting-row">
+        <label for="minSpeed">Min Speed</label>
+        <input type="number" id="minSpeed" step="0.1" min="0.1" max="1">
+      </div>
+      <div class="setting-row">
+        <label for="maxSpeed">Max Speed</label>
+        <input type="number" id="maxSpeed" step="1" min="1" max="16">
+      </div>
+      <div class="setting-row">
+        <label for="holdSpeed">Hold-Down Speed</label>
+        <input type="number" id="holdSpeed" step="0.1" min="0.1" max="16">
+      </div>
+      <div class="setting-row">
+        <label for="presetSpeed">Preset Speed (G key)</label>
+        <input type="number" id="presetSpeed" step="0.1" min="0.1" max="16">
+      </div>
+    </section>
+
+    <section>
+      <h2>Hotkey Settings</h2>
+      <div class="setting-row">
+        <label>Decrease Speed</label>
+        <div class="hotkey-bind">
+          <span class="hotkey-current" id="hotkey-decreaseSpeed">S</span>
+          <button class="rebind-btn" data-action="decreaseSpeed">Press to rebind</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Increase Speed</label>
+        <div class="hotkey-bind">
+          <span class="hotkey-current" id="hotkey-increaseSpeed">D</span>
+          <button class="rebind-btn" data-action="increaseSpeed">Press to rebind</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Reset Speed</label>
+        <div class="hotkey-bind">
+          <span class="hotkey-current" id="hotkey-resetSpeed">R</span>
+          <button class="rebind-btn" data-action="resetSpeed">Press to rebind</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Preset Speed</label>
+        <div class="hotkey-bind">
+          <span class="hotkey-current" id="hotkey-presetSpeed">G</span>
+          <button class="rebind-btn" data-action="presetSpeed">Press to rebind</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Toggle Overlay</label>
+        <div class="hotkey-bind">
+          <span class="hotkey-current" id="hotkey-toggleOverlay">V</span>
+          <button class="rebind-btn" data-action="toggleOverlay">Press to rebind</button>
+        </div>
+      </div>
+      <p class="hint" id="conflict-warning" style="display:none; color:#ff6b6b;">
+        ⚠ Hotkey conflict detected! Two actions share the same key.
+      </p>
+    </section>
+
+    <section>
+      <h2>Overlay Settings</h2>
+      <div class="setting-row">
+        <label for="showOverlay">Show overlay on startup</label>
+        <input type="checkbox" id="showOverlay">
+      </div>
+      <div class="setting-row">
+        <label>Overlay position</label>
+        <button id="resetPosition" class="action-btn">Reset to top-left</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Actions</h2>
+      <button id="resetAll" class="action-btn danger">Reset all to defaults</button>
+    </section>
+
+    <p class="save-status" id="saveStatus">Settings auto-save</p>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
