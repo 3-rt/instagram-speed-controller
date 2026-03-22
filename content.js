@@ -153,8 +153,71 @@
     chrome.storage.sync.set({ overlayPosition: { xPercent, yPercent } });
   });
 
-  // Placeholder — overlay created in Task 4
-  function createOverlay(video) {}
+  function createOverlay(video) {
+    const overlay = document.createElement('div');
+    overlay.className = 'isc-overlay';
+    if (!settings.showOverlay) overlay.classList.add('isc-hidden');
+
+    const pill = document.createElement('div');
+    pill.className = 'isc-pill';
+
+    const speedDisplay = document.createElement('span');
+    speedDisplay.className = 'isc-speed-display';
+    speedDisplay.textContent = currentSpeed.toFixed(2);
+
+    const controls = document.createElement('div');
+    controls.className = 'isc-controls';
+
+    const buttons = [
+      { label: '\u00AB', action: () => applySpeed(currentSpeed - settings.largeSpeedIncrement) },
+      { label: '\u2212', action: () => applySpeed(currentSpeed - settings.speedIncrement) },
+      { label: '+', action: () => applySpeed(currentSpeed + settings.speedIncrement) },
+      { label: '\u00BB', action: () => applySpeed(currentSpeed + settings.largeSpeedIncrement) },
+      { label: '\u00D7', action: () => overlay.classList.add('isc-hidden') }
+    ];
+
+    buttons.forEach(({ label, action }) => {
+      const btn = document.createElement('button');
+      btn.className = 'isc-btn';
+      btn.textContent = label;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        action();
+      });
+      controls.appendChild(btn);
+    });
+
+    pill.appendChild(speedDisplay);
+    pill.appendChild(controls);
+    overlay.appendChild(pill);
+
+    // Position from settings (percentage-based)
+    overlay.style.left = (settings.overlayPosition.xPercent || 0) + '%';
+    overlay.style.top = (settings.overlayPosition.yPercent || 0) + '%';
+
+    // Dragging — uses shared document-level listeners (set up once, see dragState above)
+    pill.addEventListener('mousedown', (e) => {
+      if (e.target.classList.contains('isc-btn')) return;
+      dragState.isDragging = true;
+      dragState.overlay = overlay;
+      dragState.startX = e.clientX;
+      dragState.startY = e.clientY;
+      const rect = overlay.getBoundingClientRect();
+      dragState.overlayStartX = rect.left;
+      dragState.overlayStartY = rect.top;
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    // Stop propagation on all overlay interactions
+    overlay.addEventListener('click', (e) => e.stopPropagation());
+    overlay.addEventListener('mousedown', (e) => e.stopPropagation());
+
+    const parent = video.parentElement;
+    parent.appendChild(overlay);
+    video._iscOverlay = overlay;
+  }
 
   // Placeholder — mouse hold created in Task 5
   function setupMouseHold(video) {}
