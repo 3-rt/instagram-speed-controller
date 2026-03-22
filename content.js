@@ -82,6 +82,13 @@
       video.playbackRate = currentSpeed;
     });
 
+    // Re-apply speed if Instagram programmatically changes playbackRate
+    video.addEventListener('ratechange', () => {
+      if (video.playbackRate !== currentSpeed) {
+        video.playbackRate = currentSpeed;
+      }
+    });
+
     createOverlay(video);
     setupMouseHold(video);
     setupIntersectionObserver(video);
@@ -267,8 +274,8 @@
       mutationTimeout = null;
       const videos = document.querySelectorAll('video');
       videos.forEach(trackVideo);
-      // Clean up removed videos
-      trackedVideos.forEach((video) => {
+      // Clean up removed videos (spread to array to avoid mutating Set during iteration)
+      [...trackedVideos].forEach((video) => {
         if (!document.contains(video)) {
           untrackVideo(video);
         }
