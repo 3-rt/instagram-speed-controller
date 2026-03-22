@@ -77,6 +77,11 @@
       parent.style.position = 'relative';
     }
 
+    // Re-apply speed when Instagram resets playbackRate on new reel
+    video.addEventListener('play', () => {
+      video.playbackRate = currentSpeed;
+    });
+
     createOverlay(video);
     setupMouseHold(video);
     setupIntersectionObserver(video);
