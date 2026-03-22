@@ -219,8 +219,40 @@
     video._iscOverlay = overlay;
   }
 
-  // Placeholder — mouse hold created in Task 5
-  function setupMouseHold(video) {}
+  function setupMouseHold(video) {
+    let holdTimer = null;
+    let speedBeforeHold = null;
+
+    // Use the video's parent container since Instagram overlays UI elements
+    // on top of the video — mousedown on <video> may not fire reliably
+    const container = video.parentElement || video;
+
+    container.addEventListener('mousedown', (e) => {
+      // Only left click
+      if (e.button !== 0) return;
+      // Don't trigger if clicking overlay
+      if (e.target.closest('.isc-overlay')) return;
+
+      holdTimer = setTimeout(() => {
+        speedBeforeHold = currentSpeed;
+        applySpeed(settings.holdSpeed);
+      }, 300);
+    });
+
+    const cancelHold = () => {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+      }
+      if (speedBeforeHold !== null) {
+        applySpeed(speedBeforeHold);
+        speedBeforeHold = null;
+      }
+    };
+
+    container.addEventListener('mouseup', cancelHold);
+    container.addEventListener('mouseleave', cancelHold);
+  }
 
   // MutationObserver to detect new videos (debounced)
   let mutationTimeout = null;
