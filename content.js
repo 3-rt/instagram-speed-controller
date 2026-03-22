@@ -278,4 +278,44 @@
     // Track any videos already on the page
     document.querySelectorAll('video').forEach(trackVideo);
   });
+
+  // Hotkey handler
+  document.addEventListener('keydown', (e) => {
+    // Ignore when typing in inputs
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+    if (document.activeElement?.isContentEditable) return;
+
+    // No active video, skip
+    if (!activeVideo || !document.contains(activeVideo)) return;
+
+    const key = e.key.toLowerCase();
+    const { hotkeys } = settings;
+
+    if (key === hotkeys.decreaseSpeed) {
+      e.preventDefault();
+      applySpeed(currentSpeed - settings.speedIncrement);
+    } else if (key === hotkeys.increaseSpeed) {
+      e.preventDefault();
+      applySpeed(currentSpeed + settings.speedIncrement);
+    } else if (key === hotkeys.resetSpeed) {
+      e.preventDefault();
+      applySpeed(settings.defaultSpeed);
+    } else if (key === hotkeys.presetSpeed) {
+      e.preventDefault();
+      applySpeed(settings.presetSpeed);
+    } else if (key === hotkeys.toggleOverlay) {
+      e.preventDefault();
+      trackedVideos.forEach((video) => {
+        if (video._iscOverlay) {
+          video._iscOverlay.classList.toggle('isc-hidden');
+        }
+      });
+      // Persist visibility
+      const anyVisible = [...trackedVideos].some(
+        (v) => v._iscOverlay && !v._iscOverlay.classList.contains('isc-hidden')
+      );
+      chrome.storage.sync.set({ showOverlay: anyVisible });
+    }
+  });
 })();
