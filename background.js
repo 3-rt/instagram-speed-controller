@@ -1,4 +1,2 @@
-// Open settings page when extension icon is clicked
-chrome.action.onClicked.addListener(() => {
-  chrome.runtime.openOptionsPage();
-});
+// Background service worker
+// Popup handles icon click, settings page opened via popup link

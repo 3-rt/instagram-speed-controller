@@ -48,6 +48,14 @@
       } else {
         settings[key] = newValue;
       }
+      // React to showOverlay toggle from popup
+      if (key === 'showOverlay' && globalOverlay) {
+        if (newValue) {
+          globalOverlay.classList.remove('isc-hidden');
+        } else {
+          globalOverlay.classList.add('isc-hidden');
+        }
+      }
     }
   });
 
@@ -246,8 +254,7 @@
       { label: '\u00AB', action: () => applySpeed(currentSpeed - settings.largeSpeedIncrement) },
       { label: '\u2212', action: () => applySpeed(currentSpeed - settings.speedIncrement) },
       { label: '+', action: () => applySpeed(currentSpeed + settings.speedIncrement) },
-      { label: '\u00BB', action: () => applySpeed(currentSpeed + settings.largeSpeedIncrement) },
-      { label: '\u00D7', action: () => overlay.classList.add('isc-hidden') }
+      { label: '\u00BB', action: () => applySpeed(currentSpeed + settings.largeSpeedIncrement) }
     ];
 
     buttons.forEach(({ label, action }) => {
