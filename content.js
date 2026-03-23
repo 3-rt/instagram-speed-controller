@@ -59,10 +59,11 @@
     trackedVideos.forEach((video) => {
       video.playbackRate = speed;
     });
-    // Update all overlays
-    document.querySelectorAll('.isc-speed-display').forEach((el) => {
-      el.textContent = speed.toFixed(2);
-    });
+    // Update overlay speed display
+    if (globalOverlay) {
+      const display = globalOverlay.querySelector('.isc-speed-display');
+      if (display) display.textContent = speed.toFixed(2);
+    }
   }
 
   // Track a new video element
@@ -150,8 +151,10 @@
     });
   });
 
-  // Single global overlay appended to document.body (can be dragged anywhere on page)
+  // Single global overlay in a Shadow DOM host appended to documentElement
+  // Shadow DOM isolates the overlay from Instagram's CSS (transforms, overflow, etc.)
   let globalOverlay = null;
+  let shadowHost = null;
 
   function createOverlay(video) {
     // Only create one overlay globally
@@ -159,6 +162,71 @@
       video._iscOverlay = globalOverlay;
       return;
     }
+
+    // Create shadow DOM host on documentElement to escape all Instagram CSS
+    shadowHost = document.createElement('div');
+    shadowHost.id = 'isc-shadow-host';
+    shadowHost.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;z-index:2147483647;pointer-events:none;';
+    document.documentElement.appendChild(shadowHost);
+    const shadow = shadowHost.attachShadow({ mode: 'open' });
+
+    // Inject styles directly into shadow DOM
+    const style = document.createElement('style');
+    style.textContent = `
+      .isc-overlay {
+        position: fixed;
+        z-index: 2147483647;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 13px;
+        color: #fff;
+        user-select: none;
+        pointer-events: auto;
+        transition: opacity 0.2s;
+      }
+      .isc-overlay.isc-hidden { display: none; }
+      .isc-pill {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 8px;
+        padding: 4px 8px;
+        cursor: grab;
+        backdrop-filter: blur(4px);
+      }
+      .isc-pill:active { cursor: grabbing; }
+      .isc-speed-display {
+        font-weight: 600;
+        font-size: 13px;
+        min-width: 36px;
+        text-align: center;
+      }
+      .isc-controls {
+        display: none;
+        align-items: center;
+        gap: 4px;
+        margin-left: 6px;
+      }
+      .isc-overlay:hover .isc-controls { display: flex; }
+      .isc-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        line-height: 1;
+        transition: background 0.15s;
+      }
+      .isc-btn:hover { background: rgba(255, 255, 255, 0.3); }
+    `;
+    shadow.appendChild(style);
 
     const overlay = document.createElement('div');
     overlay.className = 'isc-overlay';
@@ -221,7 +289,7 @@
     overlay.addEventListener('click', (e) => e.stopPropagation());
     overlay.addEventListener('mousedown', (e) => e.stopPropagation());
 
-    document.body.appendChild(overlay);
+    shadow.appendChild(overlay);
     globalOverlay = overlay;
     video._iscOverlay = overlay;
   }
