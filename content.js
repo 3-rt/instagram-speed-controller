@@ -151,12 +151,7 @@
     const overlay = dragState.overlay;
     dragState.isDragging = false;
     dragState.overlay = null;
-    chrome.storage.sync.set({
-      overlayPosition: {
-        x: parseInt(overlay.style.left),
-        y: parseInt(overlay.style.top)
-      }
-    });
+    // Position is not persisted — resets to video corner on refresh
   });
 
   // Single global overlay in a Shadow DOM host appended to documentElement
@@ -273,17 +268,10 @@
     pill.appendChild(controls);
     overlay.appendChild(pill);
 
-    // Position: use saved position if available, otherwise top-left of the video
-    const pos = settings.overlayPosition;
-    if (pos.x !== null && pos.x !== undefined) {
-      overlay.style.left = pos.x + 'px';
-      overlay.style.top = pos.y + 'px';
-    } else {
-      // Default to top-left corner of the video + small padding
-      const videoRect = video.getBoundingClientRect();
-      overlay.style.left = (videoRect.left + 8) + 'px';
-      overlay.style.top = (videoRect.top + 8) + 'px';
-    }
+    // Always start at top-left corner of the video on page load
+    const videoRect = video.getBoundingClientRect();
+    overlay.style.left = (videoRect.left + 8) + 'px';
+    overlay.style.top = (videoRect.top + 8) + 'px';
 
     // Dragging — uses shared document-level listeners (set up once, see dragState above)
     pill.addEventListener('mousedown', (e) => {
