@@ -4,14 +4,10 @@
   "version": "1.0.0",
   "description": "Control playback speed of Instagram Reels and videos with overlay, hotkeys, and mouse-hold.",
   "permissions": ["storage"],
-  "background": {
-    "service_worker": "background.js"
-  },
   "content_scripts": [
     {
       "matches": ["*://*.instagram.com/*"],
       "js": ["content.js"],
-      "css": ["content.css"],
       "run_at": "document_idle"
     }
   ],

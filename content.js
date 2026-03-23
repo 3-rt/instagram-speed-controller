@@ -17,7 +17,7 @@
       toggleOverlay: 'v'
     },
     showOverlay: true,
-    overlayPosition: { x: 0, y: 0 }
+    overlayPosition: { x: null, y: null }
   };
 
   let settings = { ...DEFAULT_SETTINGS };
@@ -275,8 +275,7 @@
 
     // Position: use saved position if available, otherwise top-left of the video
     const pos = settings.overlayPosition;
-    const hasSavedPosition = pos.x !== undefined && pos.x !== 0 || pos.y !== undefined && pos.y !== 0;
-    if (hasSavedPosition) {
+    if (pos.x !== null && pos.x !== undefined) {
       overlay.style.left = pos.x + 'px';
       overlay.style.top = pos.y + 'px';
     } else {
@@ -320,8 +319,8 @@
     container.addEventListener('mousedown', (e) => {
       // Only left click
       if (e.button !== 0) return;
-      // Don't trigger if clicking overlay
-      if (e.target.closest('.isc-overlay')) return;
+      // Don't trigger if clicking the overlay's shadow host
+      if (e.target.id === 'isc-shadow-host' || e.target.closest('#isc-shadow-host')) return;
 
       holdTimer = setTimeout(() => {
         speedBeforeHold = currentSpeed;
