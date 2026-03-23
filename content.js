@@ -266,10 +266,18 @@
     pill.appendChild(controls);
     overlay.appendChild(pill);
 
-    // Position from settings (pixel-based)
+    // Position: use saved position if available, otherwise top-left of the video
     const pos = settings.overlayPosition;
-    overlay.style.left = (pos.x || 0) + 'px';
-    overlay.style.top = (pos.y || 0) + 'px';
+    const hasSavedPosition = pos.x !== undefined && pos.x !== 0 || pos.y !== undefined && pos.y !== 0;
+    if (hasSavedPosition) {
+      overlay.style.left = pos.x + 'px';
+      overlay.style.top = pos.y + 'px';
+    } else {
+      // Default to top-left corner of the video + small padding
+      const videoRect = video.getBoundingClientRect();
+      overlay.style.left = (videoRect.left + 8) + 'px';
+      overlay.style.top = (videoRect.top + 8) + 'px';
+    }
 
     // Dragging — uses shared document-level listeners (set up once, see dragState above)
     pill.addEventListener('mousedown', (e) => {
