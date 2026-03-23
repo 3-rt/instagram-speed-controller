@@ -296,6 +296,29 @@
     video._iscOverlay = overlay;
   }
 
+  let overlayHidden = false;
+
+  function hideOverlay() {
+    if (shadowHost && !overlayHidden) {
+      shadowHost.style.display = 'none';
+      overlayHidden = true;
+    }
+  }
+
+  function showOverlay() {
+    if (!shadowHost) return;
+    if (!settings.showOverlay) return;
+    const wasHidden = overlayHidden;
+    shadowHost.style.display = '';
+    overlayHidden = false;
+    // Reposition to video corner when returning from a non-video page
+    if (wasHidden && globalOverlay && activeVideo && document.contains(activeVideo)) {
+      const videoRect = activeVideo.getBoundingClientRect();
+      globalOverlay.style.left = (videoRect.left + 8) + 'px';
+      globalOverlay.style.top = (videoRect.top + 8) + 'px';
+    }
+  }
+
   function setupMouseHold(video) {
     let holdTimer = null;
     let speedBeforeHold = null;
@@ -345,6 +368,12 @@
           untrackVideo(video);
         }
       });
+      // Hide overlay when no videos on page, show when videos return
+      if (trackedVideos.size === 0) {
+        hideOverlay();
+      } else {
+        showOverlay();
+      }
     }, 200);
   });
 
