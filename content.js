@@ -17,7 +17,7 @@
       toggleOverlay: 'v'
     },
     showOverlay: true,
-    overlayPosition: { xPercent: 0, yPercent: 0 }
+    overlayPosition: { x: 0, y: 0 }
   };
 
   let settings = { ...DEFAULT_SETTINGS };
@@ -71,12 +71,6 @@
     trackedVideos.add(video);
     video.playbackRate = currentSpeed;
 
-    // Ensure video's parent is positioned for overlay placement
-    const parent = video.parentElement;
-    if (parent && getComputedStyle(parent).position === 'static') {
-      parent.style.position = 'relative';
-    }
-
     // Re-apply speed when Instagram resets playbackRate on new reel
     video.addEventListener('play', () => {
       video.playbackRate = currentSpeed;
@@ -97,10 +91,7 @@
   // Untrack a removed video
   function untrackVideo(video) {
     trackedVideos.delete(video);
-    const overlay = video._iscOverlay;
-    if (overlay && overlay.parentElement) {
-      overlay.parentElement.removeChild(overlay);
-    }
+    video._iscOverlay = null;
     // Clean up IntersectionObserver
     if (video._iscIntersectionObserver) {
       video._iscIntersectionObserver.disconnect();
@@ -135,20 +126,15 @@
   document.addEventListener('mousemove', (e) => {
     if (!dragState.isDragging || !dragState.overlay) return;
     const overlay = dragState.overlay;
-    const parent = overlay.parentElement;
-    if (!parent) return;
-    const parentRect = parent.getBoundingClientRect();
     const dx = e.clientX - dragState.startX;
     const dy = e.clientY - dragState.startY;
-    const newX = dragState.overlayStartX + dx - parentRect.left;
-    const newY = dragState.overlayStartY + dy - parentRect.top;
-    const overlayRect = overlay.getBoundingClientRect();
-    const maxXPercent = ((parentRect.width - overlayRect.width) / parentRect.width) * 100;
-    const maxYPercent = ((parentRect.height - overlayRect.height) / parentRect.height) * 100;
-    const xPercent = Math.max(0, Math.min(maxXPercent, (newX / parentRect.width) * 100));
-    const yPercent = Math.max(0, Math.min(maxYPercent, (newY / parentRect.height) * 100));
-    overlay.style.left = xPercent + '%';
-    overlay.style.top = yPercent + '%';
+    const newX = dragState.overlayStartX + dx;
+    const newY = dragState.overlayStartY + dy;
+    // Clamp to viewport
+    const maxX = window.innerWidth - overlay.offsetWidth;
+    const maxY = window.innerHeight - overlay.offsetHeight;
+    overlay.style.left = Math.max(0, Math.min(maxX, newX)) + 'px';
+    overlay.style.top = Math.max(0, Math.min(maxY, newY)) + 'px';
   });
 
   document.addEventListener('mouseup', () => {
@@ -156,16 +142,24 @@
     const overlay = dragState.overlay;
     dragState.isDragging = false;
     dragState.overlay = null;
-    const parent = overlay.parentElement;
-    if (!parent) return;
-    const parentRect = parent.getBoundingClientRect();
-    const overlayRect = overlay.getBoundingClientRect();
-    const xPercent = ((overlayRect.left - parentRect.left) / parentRect.width) * 100;
-    const yPercent = ((overlayRect.top - parentRect.top) / parentRect.height) * 100;
-    chrome.storage.sync.set({ overlayPosition: { xPercent, yPercent } });
+    chrome.storage.sync.set({
+      overlayPosition: {
+        x: parseInt(overlay.style.left),
+        y: parseInt(overlay.style.top)
+      }
+    });
   });
 
+  // Single global overlay appended to document.body (can be dragged anywhere on page)
+  let globalOverlay = null;
+
   function createOverlay(video) {
+    // Only create one overlay globally
+    if (globalOverlay) {
+      video._iscOverlay = globalOverlay;
+      return;
+    }
+
     const overlay = document.createElement('div');
     overlay.className = 'isc-overlay';
     if (!settings.showOverlay) overlay.classList.add('isc-hidden');
@@ -204,9 +198,10 @@
     pill.appendChild(controls);
     overlay.appendChild(pill);
 
-    // Position from settings (percentage-based)
-    overlay.style.left = (settings.overlayPosition.xPercent || 0) + '%';
-    overlay.style.top = (settings.overlayPosition.yPercent || 0) + '%';
+    // Position from settings (pixel-based)
+    const pos = settings.overlayPosition;
+    overlay.style.left = (pos.x || 0) + 'px';
+    overlay.style.top = (pos.y || 0) + 'px';
 
     // Dragging — uses shared document-level listeners (set up once, see dragState above)
     pill.addEventListener('mousedown', (e) => {
@@ -226,8 +221,8 @@
     overlay.addEventListener('click', (e) => e.stopPropagation());
     overlay.addEventListener('mousedown', (e) => e.stopPropagation());
 
-    const parent = video.parentElement;
-    parent.appendChild(overlay);
+    document.body.appendChild(overlay);
+    globalOverlay = overlay;
     video._iscOverlay = overlay;
   }
 
@@ -318,16 +313,11 @@
       applySpeed(settings.presetSpeed);
     } else if (key === hotkeys.toggleOverlay) {
       e.preventDefault();
-      trackedVideos.forEach((video) => {
-        if (video._iscOverlay) {
-          video._iscOverlay.classList.toggle('isc-hidden');
-        }
-      });
-      // Persist visibility
-      const anyVisible = [...trackedVideos].some(
-        (v) => v._iscOverlay && !v._iscOverlay.classList.contains('isc-hidden')
-      );
-      chrome.storage.sync.set({ showOverlay: anyVisible });
+      if (globalOverlay) {
+        globalOverlay.classList.toggle('isc-hidden');
+        const isVisible = !globalOverlay.classList.contains('isc-hidden');
+        chrome.storage.sync.set({ showOverlay: isVisible });
+      }
     }
   });
 })();

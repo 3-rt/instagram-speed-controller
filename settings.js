@@ -14,7 +14,7 @@ const DEFAULT_SETTINGS = {
     toggleOverlay: 'v'
   },
   showOverlay: true,
-  overlayPosition: { xPercent: 0, yPercent: 0 }
+  overlayPosition: { x: 0, y: 0 }
 };
 
 function loadSettings() {
@@ -85,7 +85,7 @@ if (document.getElementById('defaultSpeed')) {
 
   // Reset position
   document.getElementById('resetPosition').addEventListener('click', () => {
-    saveSettings({ overlayPosition: { xPercent: 0, yPercent: 0 } });
+    saveSettings({ overlayPosition: { x: 0, y: 0 } });
     flashSaveStatus();
   });
 
